@@ -1,0 +1,101 @@
+# ==============================================================================
+# QUARKUS CONFIGURATION: sodexoBot
+# ==============================================================================
+# Standard YAML indentation is used throughout this file: 2 spaces per level.
+# ==============================================================================
+
+# --- DEFAULT PROFILE ---
+quarkus:
+  # --- BUILD TIME (MUST BE HERE) ---
+  log:
+    min-level: DEBUG 
+    console:
+      enable: true
+      level: DEBUG
+      format: "%d{HH:mm:ss,SSS} %-5p [%c{3.}] (%t) %M:%L - %s%e%n"
+    category:
+      "org.jboss.resteasy.reactive.client.logging":
+        level: DEBUG
+      "ru.nmedvedev":
+        level: DEBUG
+
+  # --- REST CLIENTS ---
+  rest-client:
+    sodexo-api:
+      url: https://api.sodexo.com
+    telegram-api:
+      url: https://api.telegram.org
+
+# --- SAMPLE DATA RUNNER (STARTUP LOGIC) ---
+sample-data-runner:
+  # Set to 'true' to execute logic in SampleDataRunner on application startup.
+  # This is enabled by default for production/development.
+  enabled: true
+
+# --- CORE QUARKUS SERVICES CONFIGURATION ---
+quarkus:
+  mongodb:
+    # Your live Atlas cluster connection URI.
+    # *** DO NOT CHANGE THIS LINE. Paste your actual production connection string precisely. ***
+    connection-string: mongodb+srv://sodexoBot:sodexoBot@sodexobot.65rk9mb.mongodb.net/
+    # Main application database.
+    database: sodexoBot
+    
+    # Connection timeouts
+    connection-timeout: 10s
+    server-selection-timeout: 10s
+
+  log:
+    console:
+      enable: true
+      format: "%d{HH:mm:ss,SSS} %-5p [%c{3.}] (%t) %M:%L - %s%e%n"
+      level: INFO
+
+# --- TELEGRAM BOT CREDENTIALS ---
+telegram:
+  bot:
+    token: 8256621159:AAG0qIp9JTLNg1hNyevIZj820lPv8SfiUrM
+
+# --- BUSINESS LOGIC CONFIGURATION ---
+balance-check:
+  every: ${BALANCE_CHECK_EVERY:15m}
+
+spend-money-reminder:
+  half-month-allowed-balance: 1500
+  last-working-day-minus-four-allowed-balance: 1000
+  last-working-day-minus-three-allowed-balance: 500
+  last-working-day-minus-one-allowed-balance: 400
+
+# ==============================================================================
+# PROFILE OVERRIDES (Using %prefix format)
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# TEST PROFILE (Used by Maven: mvn test)
+# ------------------------------------------------------------------------------
+# Inside application.yml
+"%test":
+  quarkus:
+    http:
+      test-port: 0
+    
+    # 1. 'mongodb' starts indented by 4 spaces. Correct.
+    mongodb:
+      devservices:
+        enabled: false
+    
+    # 2. 'rest-client' MUST ALSO start indented by 4 spaces. 
+    # It must NOT be nested inside mongodb.
+    rest-client:
+      telegram-api:
+        url: https://api.telegram.org
+
+# ------------------------------------------------------------------------------
+# DEVELOPMENT PROFILE (Used by ./mvnw quarkus:dev)
+# ------------------------------------------------------------------------------
+"%dev":
+  quarkus:
+    rest-client:
+      sodexo-api:
+        # Explicit override to use the local mock server hosted by Mockoon.
+        url: "http://localhost:3000" # <--- This is the correct setting for your Mockoon tests

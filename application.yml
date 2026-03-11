@@ -1,0 +1,82 @@
+# ==============================================================================
+# QUARKUS CONFIGURATION
+# ==============================================================================
+
+quarkus:
+  # --- LOGGING (BUILD-TIME & RUNTIME) ---
+  log:
+    min-level: DEBUG
+    console:
+      enable: true
+      level: DEBUG
+    category:
+      "org.jboss.resteasy.reactive.client.logging":
+        level: DEBUG
+      "ru.nmedvedev":
+        level: DEBUG
+  
+  mongodb:
+    # Your live Atlas cluster connection URI.
+    # *** DO NOT CHANGE THIS LINE. Paste your actual production connection string precisely. ***
+    connection-string: mongodb+srv://sodexoBot:sodexoBot@sodexobot.65rk9mb.mongodb.net/
+    # Main application database.
+    database: sodexoBot
+    
+    # Connection timeouts
+    quarkus.mongodb.connect-timeout: 10s
+    server-selection-timeout: 10s
+
+  # --- REST CLIENTS (BASE URLS) ---
+  rest-client:
+    sodexo-api:
+      url: https://api.sodexo.com
+    telegram-api:
+      url: https://api.telegram.org
+
+# ==============================================================================
+# PROFILE OVERRIDES
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# TEST PROFILE (Used by Maven: mvn test)
+# ------------------------------------------------------------------------------
+"%test":
+  quarkus:
+    http:
+      test-port: 0  # <--- Add this line!
+    # THIS BLOCK ENABLES THE DEBUG LOGS DURING TESTS
+    log:
+      level: DEBUG
+      category:
+        "io.quarkus.rest.client.reactive.core": # Add this specific category
+          level: DEBUG
+        "org.jboss.resteasy.reactive.client.logging":
+          level: DEBUG
+    mongodb:
+      devservices:
+        enabled: false
+    rest-client:
+      telegram-api:
+        # Use base URL only. Java @Path handles the rest.
+        url: https://api.telegram.org
+
+  # --- CONFIGURATION REQUIRED FOR STARTUP ---
+  balance-check:
+    every: 1m
+
+  # --- ADD THESE MISSING PROPERTIES TO THE TEST PROFILE ---
+  spend-money-reminder:
+    half-month-allowed-balance: 500
+    last-working-day-minus-four-allowed-balance: 400
+    last-working-day-minus-three-allowed-balance: 300
+    last-working-day-minus-one-allowed-balance: 200
+    
+
+# --- TELEGRAM SETTINGS ---
+telegram:
+  bot:
+    token: "8256621159:AAG0qIp9JTLNg1hNyevIZj820lPv8SfiUrM"
+
+# --- SAMPLE DATA RUNNER ---
+sample-data-runner:
+  enabled: true
