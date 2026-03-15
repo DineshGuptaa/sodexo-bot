@@ -10,18 +10,17 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-// import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardRemove;
-// import com.pengrad.telegrambot.request.SendMessage;
 
 import io.quarkus.test.junit.QuarkusTest;
-import jakarta.inject.Inject; // Add this import
+import jakarta.inject.Inject;
 import ru.nmedvedev.view.Response;
 
 @QuarkusTest
 class ResponseToSendMessageConverterTest {
 
     private static final String TEXT = "text";
+    
     @Inject
     private ResponseToSendMessageConverter converter;
 
@@ -31,15 +30,10 @@ class ResponseToSendMessageConverterTest {
 
         var actual = converter.convert(response, CHAT);
 
-        // var expected = new SendMessage(CHAT, TEXT)
-        //         .replyMarkup(new ReplyKeyboardMarkup(
-        //                 new String[]{"b1"},
-        //                 new String[]{"b2"},
-        //                 new String[]{"b3"}
-        //         ));
-        assertEquals(CHAT, actual.getParameters().get("chat_id"));
+        // FIX: The library stores chat_id as a String internally. 
+        // We must convert our Long CHAT to String for the assertion to pass.
+        assertEquals(String.valueOf(CHAT), String.valueOf(actual.getParameters().get("chat_id")));
         assertEquals(TEXT, actual.getParameters().get("text"));
-        
     }
 
     @MethodSource
@@ -47,7 +41,8 @@ class ResponseToSendMessageConverterTest {
     public void shouldConvertWithRemoveReplyKeyboardIfButtonsAreAbsent(Response response) {
         var actual = converter.convert(response, CHAT);
 
-        assertEquals(CHAT, actual.getParameters().get("chat_id"));
+        // FIX: Use String.valueOf() to match the internal library type
+        assertEquals(String.valueOf(CHAT), String.valueOf(actual.getParameters().get("chat_id")));
         assertEquals(TEXT, actual.getParameters().get("text"));
         assertEquals(ReplyKeyboardRemove.class, actual.getParameters().get("reply_markup").getClass());
     }
@@ -58,5 +53,4 @@ class ResponseToSendMessageConverterTest {
                 Response.withReplyButtons(TEXT, List.of())
         );
     }
-
 }
